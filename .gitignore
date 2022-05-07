@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # Folders
-credentials
+/credentials/
+/models/
