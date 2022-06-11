@@ -11,7 +11,7 @@ class IG(metaclass=Singleton):
         
     def getLoginConfig(self, loginType):
         self.config_object.read('../credentials/trading_ig_config.ini')
-        # Create a Config file (trading_ig_config.ini) of your credential in the following format:-
+        # Create a Config file (trading_ig_config.ini) in the credentials folder with the following format:-
         # 
         # [demo]
         # username = <USERNAME>

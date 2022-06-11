@@ -14,7 +14,6 @@ TABLE = "GBPUSD_15MIN"
 TARGET_EPIC = 'CS.D.GBPUSD.MINI.IP'
 RESOLUTION = '15Min'
 INITIAL_TIMESTAMP = '2022-01-01 00:00:00'
-# DATA_POINTS = 5000
 
 TEMP_START_TIMESTAMP = '2022-01-01 00:00:00' # Temporary
 TEMP_END_TIMESTAMP  = '2022-07-01 00:00:00' # Temporary
@@ -48,17 +47,22 @@ def openIgAPIconnection(ig):
     return ig_service_live
 
 
+def openDatabaseConnection(dbConfig):
+    conn = psycopg2.connect(host=dbConfig['host'],
+                            dbname=dbConfig['database'],
+                            user=dbConfig['user'],
+                            password=dbConfig['password'])
+    cur = conn.cursor()
+    return cur, conn
+
+
 def closeDatabaseConnection(cur, conn):
     cur.close()
     conn.close()
 
 
 def getLatestTimestamp(dbConfig):
-    conn = psycopg2.connect(host=dbConfig['host'],
-                            dbname=dbConfig['database'],
-                            user=dbConfig['user'],
-                            password=dbConfig['password'])
-    cur = conn.cursor()
+    cur, conn = openDatabaseConnection(dbConfig)
     query = (f"SELECT MAX(datetime) "
              f"FROM \"{SCHEMA}\".\"{TABLE}\" ")
     try:
@@ -78,17 +82,12 @@ def getHistoricalData(ig_service_live, startDate):
     currentTimestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # currentTimestamp = TEMP_END_TIMESTAMP # Temporary
     try:
-        # res = ig_service_live.fetch_historical_prices_by_epic(epic=TARGET_EPIC, 
-        #                                                         resolution=RESOLUTION, 
-        #                                                         start_date=startDate, 
-        #                                                         end_date=currentTimestamp, 
-        #                                                         numpoints=DATA_POINTS)
         res = ig_service_live.fetch_historical_prices_by_epic_and_date_range(epic=TARGET_EPIC,
                                                                                 resolution=RESOLUTION, 
                                                                                 start_date=startDate, 
                                                                                 end_date=currentTimestamp)
     except Exception as e:
-        raise Exception(f"Could not 'fetch_historical_prices_by_epic'\n{e}")
+        raise Exception(f"Could not 'fetch_historical_prices_by_epic_and_date_range'\n{e}")
     df = pd.DataFrame.from_dict(res['prices'])
     df = df.reset_index()
     return df
@@ -114,11 +113,7 @@ def calculateMidValues(history):
 
 
 def deleteDirtyData(dbConfig, startDate):
-    conn = psycopg2.connect(host=dbConfig['host'],
-                            dbname=dbConfig['database'],
-                            user=dbConfig['user'],
-                            password=dbConfig['password'])
-    cur = conn.cursor()
+    cur, conn = openDatabaseConnection(dbConfig)
     query = (f"DELETE FROM \"{SCHEMA}\".\"{TABLE}\" " 
              f"WHERE datetime >= \'{startDate}\' ")
     try:
@@ -132,11 +127,7 @@ def deleteDirtyData(dbConfig, startDate):
 
 
 def pushDataToDatabase(dbConfig, history):
-    conn = psycopg2.connect(host=dbConfig['host'],
-                            dbname=dbConfig['database'],
-                            user=dbConfig['user'],
-                            password=dbConfig['password'])
-    cur = conn.cursor()
+    cur, conn = openDatabaseConnection(dbConfig)
     query = (f"INSERT INTO \"{SCHEMA}\".\"{TABLE}\" " 
                 f"(datetime, open, high, low, close, volume) " 
              f"VALUES (%s, %s, %s, %s, %s, %s) ")
