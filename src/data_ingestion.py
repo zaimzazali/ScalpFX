@@ -22,6 +22,15 @@ TEMP_END_TIMESTAMP  = '2022-07-01 00:00:00' # Temporary
 
 def getDatabaseConfig(parser, connTag):
     parser.read("/ScalpFX/credentials/database_connection.ini")
+    # Create a Config file (database_connection.ini) in the credentials folder with the following format:-
+    # 
+    # [PostgresqlIgTrading]
+    # host=<HOST_IP_ADDRESS>
+    # port=5432
+    # database=<DATABASE_NAME>
+    # user=<USER>
+    # password=<PASSWORD>
+    #
     db = {}
     if parser.has_section(connTag):
         params = parser.items(connTag)
