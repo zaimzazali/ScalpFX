@@ -141,25 +141,12 @@ def pushDataToDatabase(dbConfig, history):
     closeDatabaseConnection(cur, conn)
 
 
-def main():
+def getData():
     # Instantiate objects 
     ig = IG()
     parser = ConfigParser()
+
     dbConfig = getDatabaseConfig(parser, "PostgresqlIgTrading")
     ig_service_live = openIgAPIconnection(ig)
 
-    # Get the latest timestamp available in the database
-    startDate = getLatestTimestamp(dbConfig)
-    print(f"Start date: {startDate}")
-    
-    # Get historical data, then calculate the Mid values
-    history = getHistoricalData(ig_service_live, startDate)
-    mid_df = calculateMidValues(history)
-
-    # Delete dirty data, then push historical mid-value data to database
-    deleteDirtyData(dbConfig, startDate)
-    pushDataToDatabase(dbConfig, mid_df)
-
-
-if __name__ == "__main__":
-    main()
+    return {'dbConfig':dbConfig, 'ig_service_live':ig_service_live}
