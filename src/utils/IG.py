@@ -1,4 +1,4 @@
-from Singleton import Singleton
+from src.utils.Singleton import Singleton
 from trading_ig.rest import IGService
 
 class IG(metaclass=Singleton):
