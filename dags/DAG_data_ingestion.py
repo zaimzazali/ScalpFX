@@ -2,6 +2,9 @@ import sys
 from datetime import timedelta, datetime
 import pytz
 
+# IMPORTANT - Import pipelines volumes
+sys.path.append(f"/opt/airflow/pipelines")
+
 sys.path.append("/ScalpFX/")
 import src.data_ingestion as data_ingestion
 
