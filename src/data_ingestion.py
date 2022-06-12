@@ -62,7 +62,7 @@ def closeDatabaseConnection(cur, conn):
     conn.close()
 
 
-def getLatestTimestamp(dbConfig, ti=None, taskIDs=None):
+def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     if ti is not None:
         dbConfig = ti.xcom_pull(key='dbConfig', task_ids=taskIDs)
 
