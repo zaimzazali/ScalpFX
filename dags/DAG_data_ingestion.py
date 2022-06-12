@@ -34,42 +34,51 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
         task_id=f"{DAG_ID}_Get_Data",
         python_callable=data_ingestion.getData,
         op_kwargs={'connTag':"PostgresqlIgTrading", 
-                    'filePath':"./pipelines/ScalpFX/credentials/database_connection.ini"},
+                    'DbFilePath':"./pipelines/ScalpFX/credentials/database_connection.ini",
+                    'IgFilePath':"./pipelines/ScalpFX/credentials/trading_ig_config.ini"},
         provide_context=True
     )
     
     t1 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Latest_Timestamp",
         python_callable=data_ingestion.getLatestTimestamp,
-        op_kwargs={'taskIDs':f"{DAG_ID}_Get_Data"},
+        op_kwargs={'taskIDs':{'getData':f"{DAG_ID}_Get_Data"}},
         provide_context=True
     )
 
-    # t1 = PythonOperator(
-    #     task_id='Get_Latest_Timestamp',
-    #     python_callable=data_ingestion.getHistoricalData,
-    #     op_kwargs={'dbConfig':data['dbConfig']},
-    #     provide_context=True
-    # )
+    t2 = PythonOperator(
+        task_id=f"{DAG_ID}_Get_Historical_Data",
+        python_callable=data_ingestion.getHistoricalData,
+        op_kwargs={'taskIDs':{
+                                'getData':f"{DAG_ID}_Get_Data", 
+                                'getLatestTimestamp':f"{DAG_ID}_Get_Latest_Timestamp"}},
+        provide_context=True
+    )
 
+    t3 = PythonOperator(
+        task_id=f"{DAG_ID}_Calculate_Mid_Values",
+        python_callable=data_ingestion.calculateMidValues,
+        op_kwargs={'taskIDs':{'getHistoricalData':f"{DAG_ID}_Get_Historical_Data"}},
+        provide_context=True
+    )
 
+    t4 = PythonOperator(
+        task_id=f"{DAG_ID}_Delete_Dirty_Data",
+        python_callable=data_ingestion.deleteDirtyData,
+        op_kwargs={'taskIDs':{
+                                'getData':f"{DAG_ID}_Get_Data",
+                                'getLatestTimestamp':f"{DAG_ID}_Get_Latest_Timestamp"}},
+        provide_context=True
+    )
 
-
-    # t1 = PythonOperator(
-    #     task_id='ingest_data',
-    #     python_callable=daily_load.ingestData,
-    #     op_kwargs={'targetTables':data['targetTables'], 'sourceTables':data['sourceTables'], 
-    #                 'targetDB':data['targetDB'], 'schemaName':data['schemaName'], 
-    #                 'plazaGroupFilePath':plazaGroupFilePath},
-    #     provide_context=True
-    # )
-
-    # t2 = PythonOperator(
-    #     task_id='create_indexes',
-    #     python_callable=daily_load.createIndexes,
-    #     op_kwargs={'targetDB':data['targetDB'], 'targetTables':data['targetTables']},
-    #     provide_context=True
-    # )
+    t5 = PythonOperator(
+        task_id=f"{DAG_ID}_Push_Data_To_Database",
+        python_callable=data_ingestion.pushDataToDatabase,
+        op_kwargs={'taskIDs':{
+                                'getData':f"{DAG_ID}_Get_Data",
+                                'calculateMidValues':f"{DAG_ID}_Calculate_Mid_Values"}},
+        provide_context=True
+    )
 
     # DAG Pipeline
-    t0 >> t1
+    t0 >> t1 >> t2 >> t3 >> t4 >> t5

@@ -40,8 +40,8 @@ def getDatabaseConfig(parser, connTag, filePath):
     return db
 
 
-def openIgAPIconnection(ig):
-    config_live = ig.getLoginConfig('live', "./pipelines/ScalpFX/credentials/trading_ig_config.ini")
+def openIgAPIconnection(ig, filePath):
+    config_live = ig.getLoginConfig('live', filePath)
     ig_service_live = ig.getIgService(config_live)
     ig.getIgAccountDetails(ig_service_live)
     return ig_service_live
@@ -64,7 +64,7 @@ def closeDatabaseConnection(cur, conn):
 
 def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     if ti is not None:
-        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs)['dbConfig']
+        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['dbConfig']
 
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"SELECT MAX(datetime) "
@@ -82,17 +82,14 @@ def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     else:
         startDate = res[0]
 
-    # try:
-    #     ti.xcom_push(key='startDate', value=startDate)
-    # except Exception as e:
-    #     if ti is None:
-    #         print("XCom is not available")
-    #     else:
-    #         raise Exception(f"Could not push data to XCom\n{e}")
     return startDate
 
 
-def getHistoricalData(ig_service_live, startDate):
+def getHistoricalData(ig_service_live=None, startDate=None, ti=None, taskIDs=None):
+    if ti is not None:
+        ig_service_live = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['ig_service_live']
+        startDate = ti.xcom_pull(key='return_value', task_ids=taskIDs['getLatestTimestamp'])
+    
     currentTimestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # currentTimestamp = TEMP_END_TIMESTAMP # Temporary
     try:
@@ -111,7 +108,10 @@ def averageTwoFloats(x,y):
     return round2((x+y)/2, 5)
 
 
-def calculateMidValues(history):
+def calculateMidValues(history=None, ti=None, taskIDs=None):
+    if ti is not None:
+        history = ti.xcom_pull(key='return_value', task_ids=taskIDs['getHistoricalData'])
+    
     df = history.copy()
 
     df[('mid', 'Open')]  = df.apply(lambda x: averageTwoFloats(x[('bid', 'Open')],  x[('ask', 'Open')]), axis=1)
@@ -126,7 +126,11 @@ def calculateMidValues(history):
     return res
 
 
-def deleteDirtyData(dbConfig, startDate):
+def deleteDirtyData(dbConfig=None, startDate=None, ti=None, taskIDs=None):
+    if ti is not None:
+        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['dbConfig']
+        startDate = ti.xcom_pull(key='return_value', task_ids=taskIDs['getLatestTimestamp'])
+    
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"DELETE FROM \"{SCHEMA}\".\"{TABLE}\" " 
              f"WHERE datetime >= \'{startDate}\' ")
@@ -140,7 +144,11 @@ def deleteDirtyData(dbConfig, startDate):
     closeDatabaseConnection(cur, conn)
 
 
-def pushDataToDatabase(dbConfig, history):
+def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
+    if ti is not None:
+        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['dbConfig']
+        history = ti.xcom_pull(key='return_value', task_ids=taskIDs['calculateMidValues'])
+    
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"INSERT INTO \"{SCHEMA}\".\"{TABLE}\" " 
                 f"(datetime, open, high, low, close, volume) " 
@@ -155,21 +163,12 @@ def pushDataToDatabase(dbConfig, history):
     closeDatabaseConnection(cur, conn)
 
 
-def getData(connTag, filePath):
+def getData(connTag, DbFilePath, IgFilePath):
     # Instantiate objects 
     ig = IG()
     parser = ConfigParser()
 
-    dbConfig = getDatabaseConfig(parser, connTag, filePath)
-    ig_service_live = openIgAPIconnection(ig)
-
-    # try:
-    #     ti.xcom_push(key='dbConfig', value=dbConfig)
-    #     ti.xcom_push(key='ig_service_live', value=ig_service_live)
-    # except Exception as e:
-    #     if ti is None:
-    #         print("XCom is not available")
-    #     else:
-    #         raise Exception(f"Could not push data to XCom\n{e}")
+    dbConfig = getDatabaseConfig(parser, connTag, DbFilePath)
+    ig_service_live = openIgAPIconnection(ig, IgFilePath)
             
     return {'dbConfig':dbConfig, 'ig_service_live':ig_service_live}
