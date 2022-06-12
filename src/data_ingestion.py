@@ -49,6 +49,7 @@ def openIgAPIconnection(ig):
 
 def openDatabaseConnection(dbConfig):
     conn = psycopg2.connect(host=dbConfig['host'],
+                            port=dbConfig['port'],
                             dbname=dbConfig['database'],
                             user=dbConfig['user'],
                             password=dbConfig['password'])
