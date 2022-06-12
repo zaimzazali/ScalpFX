@@ -30,15 +30,20 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
             schedule_interval='@hourly',
             catchup=False
 ) as dag:
-    data = data_ingestion.getData()
-
-    # region- Process Nodes
     t0 = PythonOperator(
         task_id='Get_Latest_Timestamp',
-        python_callable=data_ingestion.getLatestTimestamp,
-        op_kwargs={'dbConfig':data['dbConfig']},
+        python_callable=data_ingestion.getData,
+        op_kwargs={'connTag':"PostgresqlIgTrading", 
+                    'filePath':"./pipelines/ScalpFX/credentials/database_connection.ini"},
         provide_context=True
     )
+    
+    # t1 = PythonOperator(
+    #     task_id='Get_Latest_Timestamp',
+    #     python_callable=data_ingestion.getLatestTimestamp,
+    #     op_kwargs={'dbConfig':data['dbConfig']},
+    #     provide_context=True
+    # )
 
     # t1 = PythonOperator(
     #     task_id='Get_Latest_Timestamp',
@@ -65,7 +70,6 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
     #     op_kwargs={'targetDB':data['targetDB'], 'targetTables':data['targetTables']},
     #     provide_context=True
     # )
-    # endregion
 
     # DAG Pipeline
     t0 

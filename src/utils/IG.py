@@ -9,8 +9,8 @@ class IG(metaclass=Singleton):
         from configparser import ConfigParser
         self.config_object = ConfigParser()
         
-    def getLoginConfig(self, loginType):
-        self.config_object.read('../credentials/trading_ig_config.ini')
+    def getLoginConfig(self, loginType, filePath):
+        self.config_object.read(filePath)
         # Create a Config file (trading_ig_config.ini) in the credentials folder with the following format:-
         # 
         # [demo]

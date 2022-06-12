@@ -42,7 +42,7 @@ def getDatabaseConfig(parser, connTag, filePath):
 
 
 def openIgAPIconnection(ig):
-    config_live = ig.getLoginConfig('live')
+    config_live = ig.getLoginConfig('live', "./pipelines/ScalpFX/credentials/trading_ig_config.ini")
     ig_service_live = ig.getIgService(config_live)
     ig.getIgAccountDetails(ig_service_live)
     return ig_service_live
@@ -62,7 +62,7 @@ def closeDatabaseConnection(cur, conn):
     conn.close()
 
 
-def getLatestTimestamp(dbConfig):
+def getLatestTimestamp(ti, dbConfig):
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"SELECT MAX(datetime) "
              f"FROM \"{SCHEMA}\".\"{TABLE}\" ")
@@ -142,7 +142,7 @@ def pushDataToDatabase(dbConfig, history):
     closeDatabaseConnection(cur, conn)
 
 
-def getData(connTag, filePath):
+def getData(ti, connTag, filePath):
     # Instantiate objects 
     ig = IG()
     parser = ConfigParser()
@@ -150,4 +150,13 @@ def getData(connTag, filePath):
     dbConfig = getDatabaseConfig(parser, connTag, filePath)
     ig_service_live = openIgAPIconnection(ig)
 
+    try:
+        ti.xcom_push(key='dbConfig', value=dbConfig)
+        ti.xcom_push(key='ig_service_live', value=ig_service_live)
+    except Exception as e:
+        if ti is None:
+            print("XCom is not available")
+        else:
+            raise Exception(f"Could not push data to XCom\n{e}")
+            
     return {'dbConfig':dbConfig, 'ig_service_live':ig_service_live}
