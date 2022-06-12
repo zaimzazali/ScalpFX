@@ -6,7 +6,7 @@ import pandas as pd
 from round2 import round2
 
 sys.path.append("/ScalpFX/")
-from src.utils.IG import IG
+from ScalpFX.src.utils.IG import IG
 
 
 SCHEMA = "FOREX_MINI"
