@@ -3,9 +3,9 @@ from datetime import timedelta, datetime
 import pytz
 
 # IMPORTANT - Import pipelines volumes
-sys.path.append(f"/opt/airflow/pipelines")
+sys.path.append(f"/opt/airflow/pipelines/ScalpFX")
 
-import ScalpFX.src.data_ingestion as data_ingestion
+import src.data_ingestion as data_ingestion
 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
