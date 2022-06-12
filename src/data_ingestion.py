@@ -5,8 +5,8 @@ from datetime import datetime
 import pandas as pd
 from round2 import round2
 
-sys.path.append("/ScalpFX/")
-from ScalpFX.src.utils.IG import IG
+sys.path.append(f"../")
+from src.utils.IG import IG
 
 
 SCHEMA = "FOREX_MINI"
@@ -19,8 +19,8 @@ TEMP_START_TIMESTAMP = '2022-01-01 00:00:00' # Temporary
 TEMP_END_TIMESTAMP  = '2022-07-01 00:00:00' # Temporary
 
 
-def getDatabaseConfig(parser, connTag):
-    parser.read("/ScalpFX/credentials/database_connection.ini")
+def getDatabaseConfig(parser, connTag, filePath):
+    parser.read(filePath)
     # Create a Config file (database_connection.ini) in the credentials folder with the following format:-
     # 
     # [PostgresqlIgTrading]
@@ -36,7 +36,8 @@ def getDatabaseConfig(parser, connTag):
         for param in params:
             db[param[0]] = param[1]
     else:
-        raise Exception(f"Section '{connTag}' not found in the database connection ini file")
+        raise Exception(f"Section '{connTag}' not found at {filePath}.")
+    print(db)
     return db
 
 
@@ -141,12 +142,12 @@ def pushDataToDatabase(dbConfig, history):
     closeDatabaseConnection(cur, conn)
 
 
-def getData():
+def getData(connTag, filePath):
     # Instantiate objects 
     ig = IG()
     parser = ConfigParser()
 
-    dbConfig = getDatabaseConfig(parser, "PostgresqlIgTrading")
+    dbConfig = getDatabaseConfig(parser, connTag, filePath)
     ig_service_live = openIgAPIconnection(ig)
 
     return {'dbConfig':dbConfig, 'ig_service_live':ig_service_live}

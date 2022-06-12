@@ -1,7 +1,7 @@
 from data_ingestion import *
 
 def main():
-    data = getData()
+    data = getData("PostgresqlIgTrading", "../credentials/database_connection.ini")
 
     # Get the latest timestamp available in the database
     startDate = getLatestTimestamp(data['dbConfig'])
