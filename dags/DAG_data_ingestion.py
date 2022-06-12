@@ -10,7 +10,7 @@ import src.data_ingestion as data_ingestion
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 
-
+DAG_ID = 'DATA_INGESTION_GBPUSD_15MIN'
 
 default_args = {
     'owner': 'Zaim Zazali',
@@ -31,19 +31,19 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
             catchup=False
 ) as dag:
     t0 = PythonOperator(
-        task_id='Get_Latest_Timestamp',
+        task_id=f"{DAG_ID}_Get_Data",
         python_callable=data_ingestion.getData,
         op_kwargs={'connTag':"PostgresqlIgTrading", 
                     'filePath':"./pipelines/ScalpFX/credentials/database_connection.ini"},
         provide_context=True
     )
     
-    # t1 = PythonOperator(
-    #     task_id='Get_Latest_Timestamp',
-    #     python_callable=data_ingestion.getLatestTimestamp,
-    #     op_kwargs={'dbConfig':data['dbConfig']},
-    #     provide_context=True
-    # )
+    t1 = PythonOperator(
+        task_id=f"{DAG_ID}_Get_Latest_Timestamp",
+        python_callable=data_ingestion.getLatestTimestamp,
+        op_kwargs={'taskIDs':f"{DAG_ID}_Get_Data"},
+        provide_context=True
+    )
 
     # t1 = PythonOperator(
     #     task_id='Get_Latest_Timestamp',
@@ -72,4 +72,4 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
     # )
 
     # DAG Pipeline
-    t0 
+    t0 >> t1

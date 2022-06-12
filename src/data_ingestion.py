@@ -62,7 +62,10 @@ def closeDatabaseConnection(cur, conn):
     conn.close()
 
 
-def getLatestTimestamp(ti, dbConfig):
+def getLatestTimestamp(dbConfig, ti=None, taskIDs=None):
+    if ti is not None:
+        dbConfig = ti.xcom_pull(key='dbConfig', task_ids=taskIDs)
+
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"SELECT MAX(datetime) "
              f"FROM \"{SCHEMA}\".\"{TABLE}\" ")
@@ -73,10 +76,20 @@ def getLatestTimestamp(ti, dbConfig):
         raise Exception(f"Could not execute: {query}\n{e}")
     res = cur.fetchone()    
     closeDatabaseConnection(cur, conn)
+
     if res[0] is None:
-        return TEMP_START_TIMESTAMP
+        startDate = TEMP_START_TIMESTAMP
     else:
-        return res[0]
+        startDate = res[0]
+
+    try:
+        ti.xcom_push(key='startDate', value=startDate)
+    except Exception as e:
+        if ti is None:
+            print("XCom is not available")
+        else:
+            raise Exception(f"Could not push data to XCom\n{e}")
+    return startDate
 
 
 def getHistoricalData(ig_service_live, startDate):
@@ -142,7 +155,7 @@ def pushDataToDatabase(dbConfig, history):
     closeDatabaseConnection(cur, conn)
 
 
-def getData(ti, connTag, filePath):
+def getData(connTag, filePath, ti=None):
     # Instantiate objects 
     ig = IG()
     parser = ConfigParser()
