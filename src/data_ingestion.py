@@ -64,7 +64,7 @@ def closeDatabaseConnection(cur, conn):
 
 def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     if ti is not None:
-        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs)
+        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs)['dbConfig']
 
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"SELECT MAX(datetime) "
