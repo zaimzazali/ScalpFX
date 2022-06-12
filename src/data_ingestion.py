@@ -64,7 +64,7 @@ def closeDatabaseConnection(cur, conn):
 
 def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     if ti is not None:
-        dbConfig = ti.xcom_pull(key='dbConfig', task_ids=taskIDs)
+        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs)
 
     cur, conn = openDatabaseConnection(dbConfig)
     query = (f"SELECT MAX(datetime) "
@@ -82,13 +82,13 @@ def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     else:
         startDate = res[0]
 
-    try:
-        ti.xcom_push(key='startDate', value=startDate)
-    except Exception as e:
-        if ti is None:
-            print("XCom is not available")
-        else:
-            raise Exception(f"Could not push data to XCom\n{e}")
+    # try:
+    #     ti.xcom_push(key='startDate', value=startDate)
+    # except Exception as e:
+    #     if ti is None:
+    #         print("XCom is not available")
+    #     else:
+    #         raise Exception(f"Could not push data to XCom\n{e}")
     return startDate
 
 
@@ -155,7 +155,7 @@ def pushDataToDatabase(dbConfig, history):
     closeDatabaseConnection(cur, conn)
 
 
-def getData(connTag, filePath, ti=None):
+def getData(connTag, filePath):
     # Instantiate objects 
     ig = IG()
     parser = ConfigParser()
@@ -163,13 +163,13 @@ def getData(connTag, filePath, ti=None):
     dbConfig = getDatabaseConfig(parser, connTag, filePath)
     ig_service_live = openIgAPIconnection(ig)
 
-    try:
-        ti.xcom_push(key='dbConfig', value=dbConfig)
-        ti.xcom_push(key='ig_service_live', value=ig_service_live)
-    except Exception as e:
-        if ti is None:
-            print("XCom is not available")
-        else:
-            raise Exception(f"Could not push data to XCom\n{e}")
+    # try:
+    #     ti.xcom_push(key='dbConfig', value=dbConfig)
+    #     ti.xcom_push(key='ig_service_live', value=ig_service_live)
+    # except Exception as e:
+    #     if ti is None:
+    #         print("XCom is not available")
+    #     else:
+    #         raise Exception(f"Could not push data to XCom\n{e}")
             
     return {'dbConfig':dbConfig, 'ig_service_live':ig_service_live}
