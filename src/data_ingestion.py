@@ -37,7 +37,6 @@ def getDatabaseConfig(parser, connTag, filePath):
             db[param[0]] = param[1]
     else:
         raise Exception(f"Section '{connTag}' not found at {filePath}.")
-    print(db)
     return db
 
 
