@@ -2,6 +2,7 @@ import sys
 from configparser import ConfigParser
 import psycopg2
 from datetime import datetime
+import pytz
 import pandas as pd
 from round2 import round2
 
@@ -90,7 +91,7 @@ def getHistoricalData(ig_service_live=None, startDate=None, ti=None, taskIDs=Non
         ig_service_live = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['ig_service_live']
         startDate = ti.xcom_pull(key='return_value', task_ids=taskIDs['getLatestTimestamp'])
     
-    currentTimestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    currentTimestamp = datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%Y-%m-%d %H:%M:%S')
     # currentTimestamp = TEMP_END_TIMESTAMP # Temporary
     print(f"Start Timestamp: {startDate}")
     print(f"End Timestamp: {currentTimestamp}")
