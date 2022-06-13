@@ -92,6 +92,8 @@ def getHistoricalData(ig_service_live=None, startDate=None, ti=None, taskIDs=Non
     
     currentTimestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # currentTimestamp = TEMP_END_TIMESTAMP # Temporary
+    print(f"Start Timestamp: {startDate}")
+    print(f"End Timestamp: {currentTimestamp}")
     try:
         res = ig_service_live.fetch_historical_prices_by_epic_and_date_range(epic=TARGET_EPIC,
                                                                                 resolution=RESOLUTION, 
@@ -122,6 +124,8 @@ def calculateMidValues(history=None, ti=None, taskIDs=None):
     res = df[[('DateTime', ''), ('mid', 'Open'), ('mid', 'High'), ('mid', 'Low'), ('mid', 'Close'), ('last', 'Volume')]].copy()
     res.columns = res.columns.droplevel()
     res.columns = ['DateTime', 'Open', 'High', 'Low', 'Close', 'Volume']
+
+    print(res)
 
     return res
 
