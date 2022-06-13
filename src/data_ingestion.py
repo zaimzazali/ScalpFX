@@ -141,6 +141,7 @@ def deleteDirtyData(dbConfig=None, startDate=None, ti=None, taskIDs=None):
     try:
         cur.execute(query)
         conn.commit()
+        print(f"---------- Deleted dirty data from {SCHEMA}.{TABLE} starting from '{startDate}' onwards.")
     except Exception as e:
         conn.rollback()
         closeDatabaseConnection(cur, conn)
@@ -160,6 +161,7 @@ def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
     try:
         cur.executemany(query, history.values.tolist())
         conn.commit()
+        print(history.values.tolist())
     except Exception as e:
         conn.rollback()
         closeDatabaseConnection(cur, conn)
