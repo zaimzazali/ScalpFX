@@ -27,7 +27,7 @@ default_args = {
 with DAG('DATA_INGESTION_GBPUSD_15MIN',
             default_args=default_args,
             description='Ingest hourly data up to current timestamp.',
-            schedule_interval='@hourly',
+            schedule_interval='1 * * * *',
             catchup=False
 ) as dag:
     t0 = PythonOperator(
