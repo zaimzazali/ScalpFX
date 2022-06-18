@@ -36,7 +36,6 @@ class IG(metaclass=SingletonMeta):
         # acc_type = LIVE
         # acc_number = <123ABC>
         #
-
         try:
             if self.__config[loginType]:
                 return self.__config[loginType]

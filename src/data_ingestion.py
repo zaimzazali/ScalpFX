@@ -1,5 +1,3 @@
-import sys
-from configparser import ConfigParser
 import psycopg2
 from datetime import datetime
 import pytz
@@ -23,29 +21,29 @@ TEMP_START_TIMESTAMP = '2022-01-01 00:00:00' # Temporary
 TEMP_END_TIMESTAMP  = '2022-07-01 00:00:00' # Temporary
 
 
-def getDatabaseConfig(parser, connTag, filePath):
-    parser.read(filePath)
-    # Create a Config file (database_connection.ini) in the credentials folder with the following format:-
-    # 
-    # [PostgresqlIgTrading]
-    # host=<HOST_IP_ADDRESS>
-    # port=5432
-    # database=<DATABASE_NAME>
-    # user=<USER>
-    # password=<PASSWORD>
-    #
-    db = {}
-    if parser.has_section(connTag):
-        params = parser.items(connTag)
-        for param in params:
-            db[param[0]] = param[1]
-    else:
-        raise Exception(f"Section '{connTag}' not found at {filePath}.")
-    return db
+# def getDatabaseConfig(parser, connTag, filePath):
+#     parser.read(filePath)
+#     # Create a Config file (database_connection.ini) in the credentials folder with the following format:-
+#     # 
+#     # [PostgresqlIgTrading]
+#     # host=<HOST_IP_ADDRESS>
+#     # port=5432
+#     # database=<DATABASE_NAME>
+#     # user=<USER>
+#     # password=<PASSWORD>
+#     #
+#     db = {}
+#     if parser.has_section(connTag):
+#         params = parser.items(connTag)
+#         for param in params:
+#             db[param[0]] = param[1]
+#     else:
+#         raise Exception(f"Section '{connTag}' not found at {filePath}.")
+#     return db
 
 
-def openIgAPIconnection(ig, filePath):
-    config_live = ig.getLoginConfig('live', filePath)
+def openIgAPIconnection(ig, loginType):
+    config_live = ig.getLoginConfig(loginType)
     ig_service = ig.getIgService(config_live)
     ig.getIgAccountDetails(ig_service)
     return ig_service
@@ -173,12 +171,12 @@ def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
     closeDatabaseConnection(cur, conn)
 
 
-def getData(ConnTag, IgName):
+def getData(ConnTag, loginType):
     # Instantiate objects 
     databaseConnector = DatabaseConnector()
     ig = IG()
 
     dbConfig = databaseConnector.getConnectionDetailByTag(ConnTag)
-    ig_service = openIgAPIconnection(ig, IgName)
+    ig_service = openIgAPIconnection(ig, loginType)
             
     return {'dbConfig':dbConfig, 'ig_service':ig_service}

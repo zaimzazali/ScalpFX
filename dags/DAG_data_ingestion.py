@@ -38,7 +38,7 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
         task_id=f"{DAG_ID}_Get_Data",
         python_callable=data_ingestion.getData,
         op_kwargs={'ConnTag':"PostgresqlIgTrading",
-                   'IgName':"live"},
+                   'loginType':"live"},
         provide_context=True
     )
     
