@@ -1,7 +1,14 @@
-from src.Utils_Python.design_pattern.SingletonMeta import Singleton
 from trading_ig.rest import IGService
 
-class IG(metaclass=Singleton):
+# IMPORTANT
+import sys
+from pathlib import Path
+sys.path.append(f"{Path(__file__).parents[1]}/design_pattern/")
+from SingletonMeta import SingletonMeta
+
+
+
+class IG(metaclass=SingletonMeta):
     config_object = None
 
     def __init__(self):

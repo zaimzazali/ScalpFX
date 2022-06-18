@@ -1,11 +1,15 @@
+# IMPORTANT - Import volume
 import sys
+sys.path.append(f"/opt/airflow/plugins/Utils_Python/folder_importer")
+from FolderImporter import FolderImporter
+FolderImporter()
+
+# Import project folder
+sys.path.append(f"/opt/airflow/plugins/pipelines/ScalpFX")
+import src.data_ingestion as data_ingestion
+
 from datetime import timedelta, datetime
 import pytz
-
-# IMPORTANT - Import pipelines volumes
-sys.path.append(f"/opt/airflow/plugins/pipelines/ScalpFX")
-
-import src.data_ingestion as data_ingestion
 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
