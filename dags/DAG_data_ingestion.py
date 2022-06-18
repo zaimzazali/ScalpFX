@@ -24,15 +24,14 @@ default_args = {
     'email': ['zaim.zazali@gmail.com'],
     'email_on_failure': True,
     'email_on_retry': True,
-    'retries': 3,
-    'retry_delay': timedelta(minutes=5)
+    'retries': 1,
+    'retry_delay': timedelta(minutes=2)
 }
 
-with DAG('DATA_INGESTION_GBPUSD_15MIN',
+with DAG(DAG_ID,
             default_args=default_args,
             description='Ingest hourly data up to current timestamp.',
-            schedule_interval='1 * * * *',
-            catchup=False
+            schedule_interval='1 * * * *' # https://crontab.guru/
 ) as dag:
     t0 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Data",
