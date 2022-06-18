@@ -30,7 +30,7 @@ default_args = {
 
 with DAG(DAG_ID,
             default_args=default_args,
-            description='Train model every ',
+            description='Train model every 2 days at 8.00pm',
             schedule_interval='0 20 */2 * *' # https://crontab.guru/
 ) as dag:
     pass
