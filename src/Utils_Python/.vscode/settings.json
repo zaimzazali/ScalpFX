@@ -1,6 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./design_pattern",
-        "./data_manipulator"
-    ]
-}
