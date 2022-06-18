@@ -4,11 +4,9 @@ import pytz
 import pandas as pd
 from round2 import round2
 
-# sys.path.append(f"../")
-# from src.Utils_Python.trading.IG import IG
-
 from DatabaseConnector import DatabaseConnector
 from IG import IG
+
 
 
 SCHEMA = "FOREX_MINI"
@@ -20,26 +18,6 @@ INITIAL_TIMESTAMP = '2022-01-01 00:00:00'
 TEMP_START_TIMESTAMP = '2022-01-01 00:00:00' # Temporary
 TEMP_END_TIMESTAMP  = '2022-07-01 00:00:00' # Temporary
 
-
-# def getDatabaseConfig(parser, connTag, filePath):
-#     parser.read(filePath)
-#     # Create a Config file (database_connection.ini) in the credentials folder with the following format:-
-#     # 
-#     # [PostgresqlIgTrading]
-#     # host=<HOST_IP_ADDRESS>
-#     # port=5432
-#     # database=<DATABASE_NAME>
-#     # username=<USERNAME>
-#     # password=<PASSWORD>
-#     #
-#     db = {}
-#     if parser.has_section(connTag):
-#         params = parser.items(connTag)
-#         for param in params:
-#             db[param[0]] = param[1]
-#     else:
-#         raise Exception(f"Section '{connTag}' not found at {filePath}.")
-#     return db
 
 
 def openIgAPIconnection(ig, loginType):
