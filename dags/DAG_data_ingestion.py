@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 import pytz
 
 # IMPORTANT - Import pipelines volumes
-sys.path.append(f"/opt/airflow/pipelines/ScalpFX")
+sys.path.append(f"/opt/airflow/plugins/pipelines/ScalpFX")
 
 import src.data_ingestion as data_ingestion
 
