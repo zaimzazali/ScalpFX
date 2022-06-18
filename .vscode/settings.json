@@ -2,6 +2,8 @@
     "python.analysis.extraPaths": [
         "./src/Utils_Python/design_pattern",
         "./src/Utils_Python/data_manipulator",
-        "./src/Utils_Python/folder_importer"
+        "./src/Utils_Python/folder_importer",
+        "./src/Utils_Python/database_connector",
+        "./src/Utils_Python/trading"
     ]
 }

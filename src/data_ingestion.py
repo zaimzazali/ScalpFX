@@ -6,8 +6,11 @@ import pytz
 import pandas as pd
 from round2 import round2
 
-sys.path.append(f"../")
-from src.Utils_Python.trading.IG import IG
+# sys.path.append(f"../")
+# from src.Utils_Python.trading.IG import IG
+
+from DatabaseConnector import DatabaseConnector
+from IG import IG
 
 
 SCHEMA = "FOREX_MINI"
@@ -43,9 +46,9 @@ def getDatabaseConfig(parser, connTag, filePath):
 
 def openIgAPIconnection(ig, filePath):
     config_live = ig.getLoginConfig('live', filePath)
-    ig_service_live = ig.getIgService(config_live)
-    ig.getIgAccountDetails(ig_service_live)
-    return ig_service_live
+    ig_service = ig.getIgService(config_live)
+    ig.getIgAccountDetails(ig_service)
+    return ig_service
 
 
 def openDatabaseConnection(dbConfig):
@@ -86,9 +89,9 @@ def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
     return startDate
 
 
-def getHistoricalData(ig_service_live=None, startDate=None, ti=None, taskIDs=None):
+def getHistoricalData(ig_service=None, startDate=None, ti=None, taskIDs=None):
     if ti is not None:
-        ig_service_live = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['ig_service_live']
+        ig_service = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['ig_service']
         startDate = ti.xcom_pull(key='return_value', task_ids=taskIDs['getLatestTimestamp'])
     
     currentTimestamp = datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%Y-%m-%d %H:%M:%S')
@@ -96,7 +99,7 @@ def getHistoricalData(ig_service_live=None, startDate=None, ti=None, taskIDs=Non
     print(f"Start Timestamp: {startDate}")
     print(f"End Timestamp: {currentTimestamp}")
     try:
-        res = ig_service_live.fetch_historical_prices_by_epic_and_date_range(epic=TARGET_EPIC,
+        res = ig_service.fetch_historical_prices_by_epic_and_date_range(epic=TARGET_EPIC,
                                                                                 resolution=RESOLUTION, 
                                                                                 start_date=startDate, 
                                                                                 end_date=currentTimestamp)
@@ -170,12 +173,12 @@ def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
     closeDatabaseConnection(cur, conn)
 
 
-def getData(connTag, DbFilePath, IgFilePath):
+def getData(ConnTag, IgName):
     # Instantiate objects 
+    databaseConnector = DatabaseConnector()
     ig = IG()
-    parser = ConfigParser()
 
-    dbConfig = getDatabaseConfig(parser, connTag, DbFilePath)
-    ig_service_live = openIgAPIconnection(ig, IgFilePath)
+    dbConfig = databaseConnector.getDatgetConnectionDetailByTagabaseConfig(ConnTag)
+    ig_service = openIgAPIconnection(ig, IgName)
             
-    return {'dbConfig':dbConfig, 'ig_service_live':ig_service_live}
+    return {'dbConfig':dbConfig, 'ig_service':ig_service}

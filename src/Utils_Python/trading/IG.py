@@ -1,3 +1,5 @@
+import os
+import configparser
 from trading_ig.rest import IGService
 
 # IMPORTANT
@@ -9,15 +11,15 @@ from SingletonMeta import SingletonMeta
 
 
 class IG(metaclass=SingletonMeta):
-    config_object = None
+    __config = None
 
     def __init__(self):
         print('IG - Instantiated')
-        from configparser import ConfigParser
-        self.config_object = ConfigParser()
-        
-    def getLoginConfig(self, loginType, filePath):
-        self.config_object.read(filePath)
+        config = configparser.ConfigParser()
+        config.read(f'{os.path.dirname(os.path.abspath(__file__))}/trading_ig_config.ini')
+        self.__config = config
+
+    def getLoginConfig(self, loginType):
         # Create a Config file (trading_ig_config.ini) in the credentials folder with the following format:-
         # 
         # [demo]
@@ -35,12 +37,11 @@ class IG(metaclass=SingletonMeta):
         # acc_number = <123ABC>
         #
 
-        if loginType == 'live':
-            return self.config_object['live']
-        elif loginType == 'demo':
-            return self.config_object['demo']
-        else:
-            return None
+        try:
+            if self.__config[loginType]:
+                return self.__config[loginType]
+        except Exception as e:
+            raise Exception(f"getLoginConfig() - {e}") from e
 
     def getIgService(self, config):
         return IGService(config['username'], config['password'], config['api_key'], config['acc_type'])

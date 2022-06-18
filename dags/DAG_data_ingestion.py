@@ -37,9 +37,8 @@ with DAG('DATA_INGESTION_GBPUSD_15MIN',
     t0 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Data",
         python_callable=data_ingestion.getData,
-        op_kwargs={'connTag':"PostgresqlIgTrading", 
-                    'DbFilePath':"./pipelines/ScalpFX/credentials/database_connection.ini",
-                    'IgFilePath':"./pipelines/ScalpFX/credentials/trading_ig_config.ini"},
+        op_kwargs={'ConnTag':"PostgresqlIgTrading",
+                    'IgName':"live"},
         provide_context=True
     )
     
