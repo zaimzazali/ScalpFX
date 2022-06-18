@@ -29,7 +29,7 @@ TEMP_END_TIMESTAMP  = '2022-07-01 00:00:00' # Temporary
 #     # host=<HOST_IP_ADDRESS>
 #     # port=5432
 #     # database=<DATABASE_NAME>
-#     # user=<USER>
+#     # username=<USERNAME>
 #     # password=<PASSWORD>
 #     #
 #     db = {}
@@ -53,7 +53,7 @@ def openDatabaseConnection(dbConfig):
     conn = psycopg2.connect(host=dbConfig['host'],
                             port=dbConfig['port'],
                             dbname=dbConfig['database'],
-                            user=dbConfig['user'],
+                            user=dbConfig['username'],
                             password=dbConfig['password'])
     cur = conn.cursor()
     return cur, conn
