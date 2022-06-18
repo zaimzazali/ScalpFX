@@ -178,7 +178,7 @@ def getData(ConnTag, IgName):
     databaseConnector = DatabaseConnector()
     ig = IG()
 
-    dbConfig = databaseConnector.getDatgetConnectionDetailByTagabaseConfig(ConnTag)
+    dbConfig = databaseConnector.getConnectionDetailByTag(ConnTag)
     ig_service = openIgAPIconnection(ig, IgName)
             
     return {'dbConfig':dbConfig, 'ig_service':ig_service}
