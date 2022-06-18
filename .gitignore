@@ -130,7 +130,7 @@ dmypy.json
 
 # Folders
 /credentials/
-/models/
+/src/models/
 
 # Files
 /src/Utils_Python/*.ini
