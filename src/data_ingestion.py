@@ -7,7 +7,7 @@ import pandas as pd
 from round2 import round2
 
 sys.path.append(f"../")
-from src.utils.IG import IG
+from src.Utils_Python.trading.IG import IG
 
 
 SCHEMA = "FOREX_MINI"
