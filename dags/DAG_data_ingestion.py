@@ -1,6 +1,6 @@
 # IMPORTANT - Import volume
 import sys
-sys.path.append(f"/opt/airflow/plugins/Utils_Python/folder_importer")
+sys.path.append(f"/opt/airflow/plugins/pipelines/ScalpFX/src/Utils_Python/folder_importer")
 from FolderImporter import FolderImporter
 FolderImporter()
 
