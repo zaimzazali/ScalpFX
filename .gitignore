@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 
 # Folders
-/credentials/
-/src/models/
-/src/Utils_Python/
+src/models/
+src/Utils_Python/
