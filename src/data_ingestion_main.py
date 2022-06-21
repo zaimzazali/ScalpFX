@@ -1,4 +1,4 @@
-from data_ingestion import *
+from ScalpFX.src.data_ingestion import *
 
 def main():
     data = getData("PostgresqlIgTrading", "live")
