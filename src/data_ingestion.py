@@ -4,7 +4,7 @@ import pytz
 import pandas as pd
 from round2 import round2
 
-from database_connector.DatabaseConnector import DatabaseConnector
+from Utils_Python.database_connector.DatabaseConnector import DatabaseConnector
 from trading.IG import IG
 
 
