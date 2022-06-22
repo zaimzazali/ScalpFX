@@ -9,7 +9,7 @@ import pytz
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 
-DAG_ID = 'MODEL_TRAINER'
+DAG_ID = 'FX_TRADER'
 
 default_args = {
     'owner': 'Zaim Zazali',
