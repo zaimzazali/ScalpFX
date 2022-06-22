@@ -1,5 +1,5 @@
 # IMPORTANT - Import volume
-from folder_importer.FolderImporter import FolderImporter
+from Utils_Python.folder_importer.FolderImporter import FolderImporter
 FolderImporter()
 import ScalpFX.src.data_ingestion as data_ingestion
 
