@@ -31,7 +31,7 @@ with DAG(DAG_ID,
     t0 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Data",
         python_callable=data_ingestion.getData,
-        op_kwargs={'ConnTag':"PostgresqlIgTrading",
+        op_kwargs={'connTag':"PostgresqlIgTrading",
                    'loginType':"live"},
         provide_context=True
     )

@@ -27,35 +27,29 @@ def openIgAPIconnection(ig, loginType):
     return ig_service
 
 
-def openDatabaseConnection(dbConfig):
-    conn = psycopg2.connect(host=dbConfig['host'],
-                            port=dbConfig['port'],
-                            dbname=dbConfig['database'],
-                            user=dbConfig['username'],
-                            password=dbConfig['password'])
-    cur = conn.cursor()
-    return cur, conn
-
-
-def closeDatabaseConnection(cur, conn):
+def closeDatabaseConnection(databaseConnector, cur, connObject):
     cur.close()
-    conn.close()
+    databaseConnector.closeConnection(connObject)
 
 
-def getLatestTimestamp(dbConfig=None, ti=None, taskIDs=None):
+def getLatestTimestamp(connTag=None, ti=None, taskIDs=None):
     if ti is not None:
-        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['dbConfig']
+        connTag = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['connTag']
 
-    cur, conn = openDatabaseConnection(dbConfig)
+    databaseConnector = DatabaseConnector()
+    connObject = databaseConnector.openConnection(connTag)
+    conn = connObject['connection']
+    cur = conn.cursor()
+
     query = (f"SELECT MAX(datetime) "
              f"FROM \"{SCHEMA}\".\"{TABLE}\" ")
     try:
         cur.execute(query)
     except Exception as e:
-        closeDatabaseConnection(cur, conn)
+        closeDatabaseConnection(databaseConnector, cur, connObject)
         raise Exception(f"Could not execute: {query}\n{e}")
     res = cur.fetchone()    
-    closeDatabaseConnection(cur, conn)
+    closeDatabaseConnection(databaseConnector, cur, connObject)
 
     if res[0] is None:
         startDate = TEMP_START_TIMESTAMP
@@ -110,12 +104,16 @@ def calculateMidValues(history=None, ti=None, taskIDs=None):
     return res
 
 
-def deleteDirtyData(dbConfig=None, startDate=None, ti=None, taskIDs=None):
+def deleteDirtyData(connTag=None, startDate=None, ti=None, taskIDs=None):
     if ti is not None:
-        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['dbConfig']
+        connTag = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['connTag']
         startDate = ti.xcom_pull(key='return_value', task_ids=taskIDs['getLatestTimestamp'])
-    
-    cur, conn = openDatabaseConnection(dbConfig)
+
+    databaseConnector = DatabaseConnector()
+    connObject = databaseConnector.openConnection(connTag)
+    conn = connObject['connection']
+    cur = conn.cursor()
+
     query = (f"DELETE FROM \"{SCHEMA}\".\"{TABLE}\" " 
              f"WHERE datetime >= \'{startDate}\' ")
     try:
@@ -124,17 +122,21 @@ def deleteDirtyData(dbConfig=None, startDate=None, ti=None, taskIDs=None):
         print(f"---------- Deleted dirty data from {SCHEMA}.{TABLE} starting from '{startDate}' onwards.")
     except Exception as e:
         conn.rollback()
-        closeDatabaseConnection(cur, conn)
+        closeDatabaseConnection(databaseConnector, cur, connObject)
         raise Exception(f"Could not execute: {query}\n{e}")
-    closeDatabaseConnection(cur, conn)
+    closeDatabaseConnection(databaseConnector, cur, connObject)
 
 
-def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
+def pushDataToDatabase(connTag=None, history=None, ti=None, taskIDs=None):
     if ti is not None:
-        dbConfig = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['dbConfig']
+        connTag = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['connTag']
         history = ti.xcom_pull(key='return_value', task_ids=taskIDs['calculateMidValues'])
     
-    cur, conn = openDatabaseConnection(dbConfig)
+    databaseConnector = DatabaseConnector()
+    connObject = databaseConnector.openConnection(connTag)
+    conn = connObject['connection']
+    cur = conn.cursor()
+
     query = (f"INSERT INTO \"{SCHEMA}\".\"{TABLE}\" " 
                 f"(datetime, open, high, low, close, volume) " 
              f"VALUES (%s, %s, %s, %s, %s, %s) ")
@@ -144,18 +146,13 @@ def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
         print(history.values.tolist())
     except Exception as e:
         conn.rollback()
-        closeDatabaseConnection(cur, conn)
+        closeDatabaseConnection(databaseConnector, cur, connObject)
         return print(f"Could not execute: {query}\n{e}")
         # raise Exception(f"Could not execute: {query}\n{e}")
-    closeDatabaseConnection(cur, conn)
+    closeDatabaseConnection(databaseConnector, cur, connObject)
 
 
-def getData(ConnTag, loginType):
-    # Instantiate objects 
-    databaseConnector = DatabaseConnector()
+def getData(connTag, loginType):
     ig = IG()
-
-    dbConfig = databaseConnector.getConnectionDetailByTag(ConnTag)
     ig_service = openIgAPIconnection(ig, loginType)
-            
-    return {'dbConfig':dbConfig, 'ig_service':ig_service}
+    return {'connTag':connTag, 'ig_service':ig_service}
