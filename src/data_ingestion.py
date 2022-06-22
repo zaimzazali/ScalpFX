@@ -145,7 +145,8 @@ def pushDataToDatabase(dbConfig=None, history=None, ti=None, taskIDs=None):
     except Exception as e:
         conn.rollback()
         closeDatabaseConnection(cur, conn)
-        raise Exception(f"Could not execute: {query}\n{e}")
+        return print(f"Could not execute: {query}\n{e}")
+        # raise Exception(f"Could not execute: {query}\n{e}")
     closeDatabaseConnection(cur, conn)
 
 
