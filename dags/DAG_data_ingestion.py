@@ -25,8 +25,8 @@ default_args = {
 
 with DAG(DAG_ID,
             default_args=default_args,
-            description='Ingest hourly data up to current timestamp.',
-            schedule_interval='1 * * * *' # https://crontab.guru/
+            description='Ingest 16th minute data up to current timestamp.',
+            schedule_interval='*/16 * * * *' # https://crontab.guru/
 ) as dag:
     t0 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Data",

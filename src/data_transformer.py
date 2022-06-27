@@ -8,7 +8,7 @@ from datetime import datetime
 SUPER_FAST = 9
 FAST = 12
 SLOW = 26
-NORMALISED_DATA_PATH = '/models/unnormalized_parameters.json'
+NORMALISED_DATA_PATH = '/data/unnormalized_parameters.json'
 
 
 

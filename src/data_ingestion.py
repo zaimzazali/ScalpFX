@@ -1,4 +1,3 @@
-import psycopg2
 from datetime import datetime
 import pytz
 import pandas as pd
@@ -131,6 +130,8 @@ def pushDataToDatabase(connTag=None, history=None, ti=None, taskIDs=None):
     if ti is not None:
         connTag = ti.xcom_pull(key='return_value', task_ids=taskIDs['getData'])['connTag']
         history = ti.xcom_pull(key='return_value', task_ids=taskIDs['calculateMidValues'])
+
+    history['inserted_on_myt'] = datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%Y-%m-%d %H:%M:%S')
     
     databaseConnector = DatabaseConnector()
     connObject = databaseConnector.openConnection(connTag)
@@ -138,8 +139,8 @@ def pushDataToDatabase(connTag=None, history=None, ti=None, taskIDs=None):
     cur = conn.cursor()
 
     query = (f"INSERT INTO \"{SCHEMA}\".\"{TABLE}\" " 
-                f"(datetime, open, high, low, close, volume) " 
-             f"VALUES (%s, %s, %s, %s, %s, %s) ")
+                f"(datetime, open, high, low, close, volume, inserted_on_myt) " 
+             f"VALUES (%s, %s, %s, %s, %s, %s, %s) ")
     try:
         cur.executemany(query, history.values.tolist())
         conn.commit()
