@@ -8,7 +8,7 @@ from datetime import datetime
 SUPER_FAST = 9
 FAST = 12
 SLOW = 26
-NORMALISED_DATA_PATH = '/data/unnormalized_parameters.json'
+NORMALISED_DATA_PATH = '/ScalpFX/src/data/unnormalized_parameters.json'
 
 
 
@@ -94,7 +94,7 @@ def calcTA(df):
     return working_df
 
 
-def normalised(df, mode):
+def normalised(df, mode='train'):
     working_df = df.copy()
 
     # Doing the Min-Max Normalization
