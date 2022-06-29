@@ -1,3 +1,5 @@
+from Utils_Python.folder_importer.FolderImporter import FolderImporter
+FolderImporter()
 from src.data_ingestion import *
 
 def main():

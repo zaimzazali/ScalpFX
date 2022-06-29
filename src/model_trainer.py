@@ -1,11 +1,10 @@
 import pandas as pd
 
-import ScalpFX.src.data_transformer as dataTransformer
+import data_transformer as dataTransformer
 from Utils_Python.database_connector.DatabaseConnector import DatabaseConnector
 
 
 
-CONN_TAG = 'PostgresqlIgTrading'
 ROW_COUNT = 96 * 5 * 2  # Points in 1 day * Number of Days * Number of Weeks
 TABLE_NAME = 'GBPUSD_15MIN'
 TMP_DF_PATH = '/ScalpFX/src/data/tmp_df.pkl'
@@ -18,9 +17,9 @@ def closeDatabaseConnection(databaseConnector, cur, connObject):
     databaseConnector.closeConnection(connObject)
 
 
-def getTrainingData():
+def getTrainingData(connTag, verbose=False):
     databaseConnector = DatabaseConnector()
-    connObject = databaseConnector.openConnection(CONN_TAG)
+    connObject = databaseConnector.openConnection(connTag)
     conn = connObject['connection']
     cur = conn.cursor()
 
@@ -43,24 +42,34 @@ def getTrainingData():
     closeDatabaseConnection(databaseConnector, cur, connObject)
 
     df = pd.DataFrame(res, columns=colNames)
+    
+    if verbose:
+        print(df)
+
     df.to_pickle(TMP_DF_PATH)
     print(f"Training Data has been saved to '{TMP_DF_PATH}'")
 
 
-def transformData():
+def transformData(verbose=False):
     df = pd.read_pickle(TMP_DF_PATH)
 
     working_df = dataTransformer.calcFeaturesEngineering(df)
     working_df = dataTransformer.calcTA(working_df)
 
+    if verbose:
+        print(working_df)
+
     working_df.to_pickle(TMP_TRANS_PATH)
     print(f"Transformed Data has been saved to '{TMP_TRANS_PATH}'")
     
 
-def normalisedDataframe():
+def normalisedDataframe(verbose=False):
     df = pd.read_pickle(TMP_TRANS_PATH)
 
     working_df = dataTransformer.normalised(df, mode='train')
+
+    if verbose:
+        print(working_df)
 
     working_df.to_pickle(TMP_NORM_PATH)
     print(f"Normalised Data has been saved to '{TMP_NORM_PATH}'")
