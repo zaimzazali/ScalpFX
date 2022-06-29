@@ -1,7 +1,7 @@
-from src.data_ingestion import *
+from src.model_trainer import *
 
 def main():
-    data = getData("PostgresqlIgTrading", "live")
+    data = getTrainingData("PostgresqlIgTrading")
 
     # Get the latest timestamp available in the database
     startDate = getLatestTimestamp(data['connTag'])
