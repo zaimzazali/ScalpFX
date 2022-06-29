@@ -12,7 +12,7 @@ NORMALISED_DATA_PATH = '/ScalpFX/src/data/unnormalized_parameters.json'
 
 
 
-def calcFeaturesEngineering(df):
+def calcFeaturesEngineering(df, verbose=False):
     working_df = df.copy()
 
     def diffTwoFloats(x,y):
@@ -37,59 +37,102 @@ def calcFeaturesEngineering(df):
     working_df['O-C-Value'] = working_df.apply(lambda x: abs(diffTwoFloats(x['open'], x['close'])), axis=1)
     working_df['O-C-Sign'] = working_df.apply(lambda x: signIndicator(x['open'] - x['close']), axis=1)
 
+    if verbose:
+        print(working_df)
+
     return working_df
 
 
-def calcTA(df):
+def calcTA(df, verbose=False):
     working_df = df.copy()
 
     # Momentum
-    working_df['Mom_AO'] = ta.momentum.AwesomeOscillatorIndicator(working_df['high'], working_df['low'], window1=FAST, window2=SLOW)
-    working_df['Mom_PPO'] = ta.momentum.PercentagePriceOscillator(working_df['close'], window_slow=SLOW, window_fast=FAST, window_sign=SUPER_FAST)
-    working_df['Mom_PVO'] = ta.momentum.PercentageVolumeOscillator(working_df['volume'], window_slow=SLOW, window_fast=FAST, window_sign=SUPER_FAST)
-    working_df['Mom_ROC'] = ta.momentum.ROCIndicator(working_df['close'], window=FAST)
-    working_df['Mom_RSI'] = ta.momentum.RSIIndicator(working_df['close'], window=FAST)
-    working_df['Mom_SRSI'] = ta.momentum.StochRSIIndicator(working_df['close'], window=FAST, smooth1=3, smooth2=3)
-    working_df['Mom_SO'] = ta.momentum.StochasticOscillator(working_df['close'], working_df['high'], working_df['low'], window=FAST, smooth_window=3)
-    working_df['Mom_TSI'] = ta.momentum.TSIIndicator(working_df['close'], window_slow=SLOW, window_fast=FAST)
-    working_df['Mom_UO'] = ta.momentum.UltimateOscillator(working_df['high'], working_df['low'], working_df['close'], window1=SUPER_FAST, window2=FAST, window3=SLOW)
+    working_df['Mom_AO'] = ta.momentum.AwesomeOscillatorIndicator(working_df['high'], working_df['low'], window1=FAST, window2=SLOW).awesome_oscillator()
+    Mom_PPO = ta.momentum.PercentagePriceOscillator(working_df['close'], window_slow=SLOW, window_fast=FAST, window_sign=SUPER_FAST)
+    working_df['Mom_PPO_ppo'] = Mom_PPO.ppo()
+    working_df['Mom_PPO_ppo_hist'] = Mom_PPO.ppo_hist()
+    working_df['Mom_PPO_ppo_signal'] = Mom_PPO.ppo_signal()
+    Mom_PVO = ta.momentum.PercentageVolumeOscillator(working_df['volume'], window_slow=SLOW, window_fast=FAST, window_sign=SUPER_FAST)
+    working_df['Mom_PVO_pvo'] = Mom_PVO.pvo()
+    working_df['Mom_PVO_pvo_hist'] = Mom_PVO.pvo_hist()
+    working_df['Mom_PVO_pvo_signal'] = Mom_PVO.pvo_signal()
+    working_df['Mom_ROC'] = ta.momentum.ROCIndicator(working_df['close'], window=FAST).roc()
+    working_df['Mom_RSI'] = ta.momentum.RSIIndicator(working_df['close'], window=FAST).rsi()
+    Mom_SRSI = ta.momentum.StochRSIIndicator(working_df['close'], window=FAST, smooth1=3, smooth2=3)
+    working_df['Mom_SRSI_stochrsi'] = Mom_SRSI.stochrsi()
+    working_df['Mom_SRSI_stochrsi_d'] = Mom_SRSI.stochrsi_d()
+    working_df['Mom_SRSI_stochrsi_k'] = Mom_SRSI.stochrsi_k()
+    Mom_SO = ta.momentum.StochasticOscillator(working_df['close'], working_df['high'], working_df['low'], window=FAST, smooth_window=3)
+    working_df['Mom_SO_stoch'] = Mom_SO.stoch()
+    working_df['Mom_SO_stoch_signal'] = Mom_SO.stoch_signal()
+    working_df['Mom_TSI'] = ta.momentum.TSIIndicator(working_df['close'], window_slow=SLOW, window_fast=FAST).tsi()
+    working_df['Mom_UO'] = ta.momentum.UltimateOscillator(working_df['high'], working_df['low'], working_df['close'], window1=SUPER_FAST, window2=FAST, window3=SLOW).ultimate_oscillator()
 
-    # Volume
-    working_df['Vol_ADI'] = ta.volume.AccDistIndexIndicator(working_df['high'], working_df['low'], working_df['close'], working_df['volume'])
-    working_df['Vol_CMF'] = ta.volume.ChaikinMoneyFlowIndicator(working_df['high'], working_df['low'], working_df['close'], working_df['volume'], window=FAST)
-    working_df['Vol_EoM'] = ta.volume.EaseOfMovementIndicator(working_df['high'], working_df['low'], working_df['volume'], window=FAST)
-    working_df['Vol_FI'] = ta.volume.ForceIndexIndicator(working_df['close'], working_df['volume'], window=FAST)
-    working_df['Vol_MFI'] = ta.volume.MFIIndicator(working_df['high'], working_df['low'], working_df['close'], working_df['volume'], window=FAST)
-    working_df['Vol_NVI'] = ta.volume.NegativeVolumeIndexIndicator(working_df['close'], working_df['volume'])
-    working_df['Vol_OBV'] = ta.volume.OnBalanceVolumeIndicator(working_df['close'], working_df['volume'])
-    working_df['Vol_VPT'] = ta.volume.VolumePriceTrendIndicator(working_df['close'], working_df['volume'])
-    working_df['Vol_VWAP'] = ta.volume.VolumeWeightedAveragePrice(working_df['high'], working_df['low'], working_df['close'], working_df['volume'], window=FAST) # Good for day-trading
+    # # Volume
+    working_df['Vol_ADI'] = ta.volume.AccDistIndexIndicator(working_df['high'], working_df['low'], working_df['close'], working_df['volume']).acc_dist_index()
+    working_df['Vol_CMF'] = ta.volume.ChaikinMoneyFlowIndicator(working_df['high'], working_df['low'], working_df['close'], working_df['volume'], window=FAST).chaikin_money_flow()
+    Vol_EoM = ta.volume.EaseOfMovementIndicator(working_df['high'], working_df['low'], working_df['volume'], window=FAST)
+    working_df['Vol_EoM_ease_of_movement'] = Vol_EoM.ease_of_movement()
+    working_df['Vol_EoM_sma_ease_of_movement'] = Vol_EoM.sma_ease_of_movement()
+    working_df['Vol_FI'] = ta.volume.ForceIndexIndicator(working_df['close'], working_df['volume'], window=FAST).force_index()
+    working_df['Vol_MFI'] = ta.volume.MFIIndicator(working_df['high'], working_df['low'], working_df['close'], working_df['volume'], window=FAST).money_flow_index()
+    working_df['Vol_NVI'] = ta.volume.NegativeVolumeIndexIndicator(working_df['close'], working_df['volume']).negative_volume_index()
+    working_df['Vol_OBV'] = ta.volume.OnBalanceVolumeIndicator(working_df['close'], working_df['volume']).on_balance_volume()
+    working_df['Vol_VPT'] = ta.volume.VolumePriceTrendIndicator(working_df['close'], working_df['volume']).volume_price_trend()
+    working_df['Vol_VWAP'] = ta.volume.VolumeWeightedAveragePrice(working_df['high'], working_df['low'], working_df['close'], working_df['volume'], window=FAST).volume_weighted_average_price() # Good for day-trading
 
-    # Volatility
-    working_df['Vola_ATR'] = ta.volatility.AverageTrueRange(working_df['high'], working_df['low'], working_df['close'], window=FAST)
-    working_df['Vola_BB'] = ta.volatility.BollingerBands(working_df['close'], window=FAST)
-    working_df['Vola_DC'] = ta.volatility.DonchianChannel(working_df['high'], working_df['low'], working_df['close'], window=FAST)
-    working_df['Vola_KC'] = ta.volatility.KeltnerChannel(working_df['high'], working_df['low'], working_df['close'], window=FAST, window_atr=FAST, original_version=False)
+    # # Volatility
+    working_df['Vola_ATR'] = ta.volatility.AverageTrueRange(working_df['high'], working_df['low'], working_df['close'], window=FAST).average_true_range()
+    Vola_BB = ta.volatility.BollingerBands(working_df['close'], window=FAST)
+    working_df['Vola_BB_bollinger_hband'] = Vola_BB.bollinger_hband()
+    working_df['Vola_BB_bollinger_hband_indicator'] = Vola_BB.bollinger_hband_indicator()
+    working_df['Vola_BB_bollinger_lband'] = Vola_BB.bollinger_lband()
+    working_df['Vola_BB_bollinger_lband_indicator'] = Vola_BB.bollinger_lband_indicator()
+    working_df['Vola_BB_bollinger_mavg'] = Vola_BB.bollinger_mavg()
+    working_df['Vola_BB_bollinger_pband'] = Vola_BB.bollinger_pband()
+    working_df['Vola_BB_bollinger_wband'] = Vola_BB.bollinger_wband()
+    Vola_DC = ta.volatility.DonchianChannel(working_df['high'], working_df['low'], working_df['close'], window=FAST)
+    working_df['Vola_DC_donchian_channel_hband'] = Vola_DC.donchian_channel_hband()
+    working_df['Vola_DC_donchian_channel_lband'] = Vola_DC.donchian_channel_lband()
+    working_df['Vola_DC_donchian_channel_mband'] = Vola_DC.donchian_channel_mband()
+    working_df['Vola_DC_donchian_channel_pband'] = Vola_DC.donchian_channel_pband()
+    working_df['Vola_DC_donchian_channel_wband'] = Vola_DC.donchian_channel_wband()
+    Vola_KC = ta.volatility.KeltnerChannel(working_df['high'], working_df['low'], working_df['close'], window=FAST, window_atr=FAST, original_version=False)
+    working_df['Vola_KC_keltner_channel_hband'] = Vola_KC.keltner_channel_hband()
+    working_df['Vola_KC_keltner_channel_hband_indicator'] = Vola_KC.keltner_channel_hband_indicator()
+    working_df['Vola_KC_keltner_channel_lband'] = Vola_KC.keltner_channel_lband()
+    working_df['Vola_KC_keltner_channel_lband_indicator'] = Vola_KC.keltner_channel_lband_indicator()
+    working_df['Vola_KC_keltner_channel_mband'] = Vola_KC.keltner_channel_mband()
+    working_df['Vola_KC_keltner_channel_pband'] = Vola_KC.keltner_channel_pband()
+    working_df['Vola_KC_keltner_channel_wband'] = Vola_KC.keltner_channel_wband()
 
-    # Trend
-    working_df['Trend_ADX'] = ta.trend.ADXIndicator(working_df['high'], working_df['low'], working_df['close'], window=FAST)
-    working_df['Trend_AI'] = ta.trend.AroonIndicator(working_df['close'], window=FAST)
-    working_df['Trend_CCI'] = ta.trend.CCIIndicator(working_df['high'], working_df['low'], working_df['close'], window=FAST)
-    working_df['Trend_DPO'] = ta.trend.DPOIndicator(working_df['close'], window=FAST)
-    working_df['Trend_EMA_12'] = ta.trend.EMAIndicator(working_df['close'], window=FAST)
-    working_df['Trend_EMA_50'] = ta.trend.EMAIndicator(working_df['close'], window=50)
-    working_df['Trend_EMA_100'] = ta.trend.EMAIndicator(working_df['close'], window=100)
-    working_df['Trend_Ichi'] = ta.trend.IchimokuIndicator(working_df['high'], working_df['low'], window1=SUPER_FAST, window2=FAST, window3=SLOW)
-    working_df['Trend_MACD'] = ta.trend.MACD(working_df['close'], window_fast=FAST, window_slow=SLOW, window_sign=SUPER_FAST)
-    working_df['Trend_MI'] = ta.trend.MassIndex(working_df['high'], working_df['low'], window_fast=FAST, window_slow=SLOW)
-    working_df['Trend_PSAR'] = ta.trend.PSARIndicator(working_df['high'], working_df['low'], working_df['close'])
-    working_df['Trend_SMA_12'] = ta.trend.EMAIndicator(working_df['close'], window=FAST)
-    working_df['Trend_SMA_50'] = ta.trend.EMAIndicator(working_df['close'], window=50)
-    working_df['Trend_SMA_100'] = ta.trend.EMAIndicator(working_df['close'], window=100)
-    working_df['Trend_STC'] = ta.trend.STCIndicator(working_df['close'], window_fast=FAST, window_slow=SLOW)
-    working_df['Trend_TRIX'] = ta.trend.TRIXIndicator(working_df['close'], window=FAST)
-    working_df['Trend_VI'] = ta.trend.VortexIndicator(working_df['high'], working_df['low'], working_df['close'], window=FAST)
-    working_df['Trend_WMA'] = ta.trend.WMAIndicator(working_df['close'], window=FAST)
+    # # Trend
+    # working_df['Trend_ADX'] = ta.trend.ADXIndicator(working_df['high'], working_df['low'], working_df['close'], window=FAST)
+    # working_df['Trend_AI'] = ta.trend.AroonIndicator(working_df['close'], window=FAST)
+    # working_df['Trend_CCI'] = ta.trend.CCIIndicator(working_df['high'], working_df['low'], working_df['close'], window=FAST)
+    # working_df['Trend_DPO'] = ta.trend.DPOIndicator(working_df['close'], window=FAST)
+    # working_df['Trend_EMA_12'] = ta.trend.EMAIndicator(working_df['close'], window=FAST)
+    # working_df['Trend_EMA_50'] = ta.trend.EMAIndicator(working_df['close'], window=50)
+    # working_df['Trend_EMA_100'] = ta.trend.EMAIndicator(working_df['close'], window=100)
+    # working_df['Trend_Ichi'] = ta.trend.IchimokuIndicator(working_df['high'], working_df['low'], window1=SUPER_FAST, window2=FAST, window3=SLOW)
+    # working_df['Trend_MACD'] = ta.trend.MACD(working_df['close'], window_fast=FAST, window_slow=SLOW, window_sign=SUPER_FAST)
+    # working_df['Trend_MI'] = ta.trend.MassIndex(working_df['high'], working_df['low'], window_fast=FAST, window_slow=SLOW)
+    # working_df['Trend_PSAR'] = ta.trend.PSARIndicator(working_df['high'], working_df['low'], working_df['close'])
+    # working_df['Trend_SMA_12'] = ta.trend.EMAIndicator(working_df['close'], window=FAST)
+    # working_df['Trend_SMA_50'] = ta.trend.EMAIndicator(working_df['close'], window=50)
+    # working_df['Trend_SMA_100'] = ta.trend.EMAIndicator(working_df['close'], window=100)
+    # working_df['Trend_STC'] = ta.trend.STCIndicator(working_df['close'], window_fast=FAST, window_slow=SLOW)
+    # working_df['Trend_TRIX'] = ta.trend.TRIXIndicator(working_df['close'], window=FAST)
+    # working_df['Trend_VI'] = ta.trend.VortexIndicator(working_df['high'], working_df['low'], working_df['close'], window=FAST)
+    # working_df['Trend_WMA'] = ta.trend.WMAIndicator(working_df['close'], window=FAST)
+
+    print(working_df)
+    print(working_df.shape[0])
+    working_df = working_df.dropna()
+    print(working_df.shape[0])
+
+    if verbose:
+        print(working_df)
 
     return working_df
 

@@ -6,6 +6,8 @@ from Utils_Python.database_connector.DatabaseConnector import DatabaseConnector
 
 
 ROW_COUNT = 96 * 5 * 2  # Points in 1 day * Number of Days * Number of Weeks
+DATABASE_NAME = 'IG_TRADING'
+SCHEMA_NAME = 'FOREX_MINI'
 TABLE_NAME = 'GBPUSD_15MIN'
 TMP_DF_PATH = '/ScalpFX/src/data/tmp_df.pkl'
 TMP_TRANS_PATH = '/ScalpFX/src/data/tmp_trans.pkl'
@@ -25,7 +27,7 @@ def getTrainingData(connTag, verbose=False):
 
     query = (   
                 f"SELECT * "
-                f"FROM \"{TABLE_NAME}\" "\
+                f"FROM \"{DATABASE_NAME}\".\"{SCHEMA_NAME}\".\"{TABLE_NAME}\" "
                 f"ORDER BY datetime DESC "
                 f"LIMIT {ROW_COUNT}"
             )
@@ -42,7 +44,8 @@ def getTrainingData(connTag, verbose=False):
     closeDatabaseConnection(databaseConnector, cur, connObject)
 
     df = pd.DataFrame(res, columns=colNames)
-    
+    df = df.sort_values(['datetime'], ascending=True).reset_index()
+
     if verbose:
         print(df)
 
@@ -50,11 +53,23 @@ def getTrainingData(connTag, verbose=False):
     print(f"Training Data has been saved to '{TMP_DF_PATH}'")
 
 
+def removeColumns(columnNames, verbose=False):
+    df = pd.read_pickle(TMP_DF_PATH)
+
+    working_df = df.drop(columns=columnNames)
+
+    if verbose:
+        print(working_df)
+
+    working_df.to_pickle(TMP_DF_PATH)
+    print(f"Removed Columns' Training Data has been saved to '{TMP_DF_PATH}'")
+
+
 def transformData(verbose=False):
     df = pd.read_pickle(TMP_DF_PATH)
 
-    working_df = dataTransformer.calcFeaturesEngineering(df)
-    working_df = dataTransformer.calcTA(working_df)
+    working_df = dataTransformer.calcFeaturesEngineering(df, verbose=verbose)
+    working_df = dataTransformer.calcTA(working_df, verbose=verbose)
 
     if verbose:
         print(working_df)

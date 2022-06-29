@@ -5,6 +5,7 @@ from model_trainer import *
 
 def main():
     getTrainingData("PostgresqlIgTrading", verbose=True)
+    removeColumns(['inserted_on_myt'], verbose=True)
     transformData(verbose=True)
 
 
