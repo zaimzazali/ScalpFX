@@ -39,41 +39,38 @@ with DAG(DAG_ID,
     t1 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Latest_Timestamp",
         python_callable=data_ingestion.getLatestTimestamp,
-        op_kwargs={'taskIDs':{'getData':f"{DAG_ID}_Get_Data"}},
+        op_kwargs={'taskIDs':{'getData':f"{DAG_ID}_Get_Data"} },
         provide_context=True
     )
 
     t2 = PythonOperator(
         task_id=f"{DAG_ID}_Get_Historical_Data",
         python_callable=data_ingestion.getHistoricalData,
-        op_kwargs={'taskIDs':{
-                                'getData':f"{DAG_ID}_Get_Data", 
-                                'getLatestTimestamp':f"{DAG_ID}_Get_Latest_Timestamp"}},
+        op_kwargs={'taskIDs':{  'getData':f"{DAG_ID}_Get_Data", 
+                                'getLatestTimestamp':f"{DAG_ID}_Get_Latest_Timestamp"} },
         provide_context=True
     )
 
     t3 = PythonOperator(
         task_id=f"{DAG_ID}_Calculate_Mid_Values",
         python_callable=data_ingestion.calculateMidValues,
-        op_kwargs={'taskIDs':{'getHistoricalData':f"{DAG_ID}_Get_Historical_Data"}},
+        op_kwargs={'taskIDs':{'getHistoricalData':f"{DAG_ID}_Get_Historical_Data"} },
         provide_context=True
     )
 
     t4 = PythonOperator(
         task_id=f"{DAG_ID}_Delete_Dirty_Data",
         python_callable=data_ingestion.deleteDirtyData,
-        op_kwargs={'taskIDs':{
-                                'getData':f"{DAG_ID}_Get_Data",
-                                'getLatestTimestamp':f"{DAG_ID}_Get_Latest_Timestamp"}},
+        op_kwargs={'taskIDs':{  'getData':f"{DAG_ID}_Get_Data",
+                                'getLatestTimestamp':f"{DAG_ID}_Get_Latest_Timestamp"} },
         provide_context=True
     )
 
     t5 = PythonOperator(
         task_id=f"{DAG_ID}_Push_Data_To_Database",
         python_callable=data_ingestion.pushDataToDatabase,
-        op_kwargs={'taskIDs':{
-                                'getData':f"{DAG_ID}_Get_Data",
-                                'calculateMidValues':f"{DAG_ID}_Calculate_Mid_Values"}},
+        op_kwargs={'taskIDs':{  'getData':f"{DAG_ID}_Get_Data",
+                                'calculateMidValues':f"{DAG_ID}_Calculate_Mid_Values"} },
         provide_context=True
     )
 
