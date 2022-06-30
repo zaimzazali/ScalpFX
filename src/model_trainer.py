@@ -5,7 +5,7 @@ from Utils_Python.database_connector.DatabaseConnector import DatabaseConnector
 
 
 
-ROW_COUNT = 96 * 5 * 2  # Points in 1 day * Number of Days * Number of Weeks
+ROW_COUNT = 96 * 5.5 * 2  # Points in 1 day * Number of Days * Number of Weeks
 DATABASE_NAME = 'IG_TRADING'
 SCHEMA_NAME = 'FOREX_MINI'
 TABLE_NAME = 'GBPUSD_15MIN'
@@ -70,9 +70,6 @@ def transformData(verbose=False):
 
     working_df = dataTransformer.calcFeaturesEngineering(df, verbose=verbose)
     working_df = dataTransformer.calcTA(working_df, verbose=verbose)
-
-    if verbose:
-        print(working_df)
 
     working_df.to_pickle(TMP_TRANS_PATH)
     print(f"Transformed Data has been saved to '{TMP_TRANS_PATH}'")
